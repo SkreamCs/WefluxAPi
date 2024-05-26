@@ -20,8 +20,7 @@ public class UserService {
     }
 
     public Mono<Void> deleteUser(int userId) {
-        userRepository.deleteActiveById(userId);
-        return Mono.empty();
+        return userRepository.deleteActiveById(userId);
     }
 
     public Mono<User> update(User user) {

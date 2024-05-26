@@ -4,6 +4,7 @@ import abdul.restApi.spring.webflux.dto.EventDto;
 import abdul.restApi.spring.webflux.mapper.EventMapper;
 import abdul.restApi.spring.webflux.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,11 +30,6 @@ public class EventRestControllerV1 {
         return eventService.updateEvent(eventMapper.map(eventDto)).map(eventMapper::map);
     }
 
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    public Mono<EventDto> createEvents(@RequestBody EventDto eventDto) {
-        return eventService.createEvent(eventMapper.map(eventDto)).map(eventMapper::map);
-    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
@@ -44,8 +40,7 @@ public class EventRestControllerV1 {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public Mono<ResponseEntity<?>> deleteEvents(@PathVariable int id) {
-        eventService.deleteByIdEvent(id);
-        return Mono.just(ResponseEntity.ok("successful removal"));
+       return eventService.deleteByIdEvent(id).thenReturn(ResponseEntity.ok("successful removal"));
     }
 
     @GetMapping("/{by-user-id}")

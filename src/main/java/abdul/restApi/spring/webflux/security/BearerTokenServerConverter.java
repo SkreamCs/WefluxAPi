@@ -14,7 +14,7 @@ public class BearerTokenServerConverter implements ServerAuthenticationConverter
 
     private final JwtHandler jwtHandler;
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final Function<String, Mono<String>> getBearerValue = authValue -> Mono.justOrEmpty(authValue.substring(BEARER_PREFIX.length()));
+    private static final Function<String, Mono<String>> getBearerValue = authValue -> Mono.justOrEmpty( authValue.substring(BEARER_PREFIX.length()));
 
     @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {

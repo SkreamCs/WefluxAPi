@@ -4,6 +4,7 @@ import abdul.restApi.spring.webflux.dto.UserDto;
 import abdul.restApi.spring.webflux.mapper.UserMapper;
 import abdul.restApi.spring.webflux.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ public class UserRestControllerV1 {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
     public Mono<UserDto> save(@RequestBody UserDto userDto) {
         return userService.create(userMapper.map(userDto)).map(userMapper::map);
     }
@@ -45,8 +47,7 @@ public class UserRestControllerV1 {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public Mono<ResponseEntity<?>> delete(@PathVariable int id) {
-        userService.deleteUser(id);
-        return Mono.just(ResponseEntity.ok("successful removal"));
+       return userService.deleteUser(id).thenReturn(ResponseEntity.ok("successful removal"));
 
     }
 }

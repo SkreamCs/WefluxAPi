@@ -38,8 +38,7 @@ public class EventService {
     }
 
     public Mono<Void> deleteByIdEvent(int id) {
-        eventRepository.deleteActiveById(id);
-        return Mono.empty();
+        return eventRepository.deleteActiveById(id);
     }
 
     public Flux<EventDto> getEventsByUserId(int userId) {
@@ -47,7 +46,6 @@ public class EventService {
             userMapper.map(event.getUser());
             fileMapper.map(event.getFile());
             return eventMapper.map(event);
-
         });
     }
 }

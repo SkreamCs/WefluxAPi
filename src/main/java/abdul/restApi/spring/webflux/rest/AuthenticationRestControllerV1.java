@@ -8,10 +8,8 @@ import abdul.restApi.spring.webflux.model.User;
 import abdul.restApi.spring.webflux.security.SecurityService;
 import abdul.restApi.spring.webflux.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -23,6 +21,7 @@ public class AuthenticationRestControllerV1 {
     private final UserMapper userMapper;
 
     @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
     public Mono<UserDto> register(@RequestBody UserDto dto) {
         User user = userMapper.map(dto);
         return userService.create(user)

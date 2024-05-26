@@ -4,7 +4,9 @@ import abdul.restApi.spring.webflux.dto.FileDto;
 import abdul.restApi.spring.webflux.mapper.FileMapper;
 import abdul.restApi.spring.webflux.service.FileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -20,14 +22,15 @@ public class FileRestControllerV1 {
     private final FileMapper fileMapper;
 
     @PostMapping("/{id}")
-    public Mono<FileDto> createFile(@RequestBody FileDto fileDto, @PathVariable int id) {
-        return fileService.upload(fileMapper.map(fileDto), id).map(fileMapper::map);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<FileDto> uploadFile(@RequestPart("file") Mono<FilePart> filePart, @PathVariable int id) {
+        return filePart.flatMap(file -> fileService.upload(file, id).map(fileMapper::map));
     }
 
-    @GetMapping("/download")
+    @GetMapping("/download/{name}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
-    public Mono<InputStream> downloadFile(@RequestBody FileDto fileDto) {
-        return fileService.download(fileMapper.map(fileDto));
+    public Mono<InputStream> downloadFile(@PathVariable String name) {
+        return fileService.download(name);
     }
 
     @GetMapping
@@ -39,8 +42,7 @@ public class FileRestControllerV1 {
     @DeleteMapping("/{name}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public Mono<ResponseEntity<?>> deleteFile(@PathVariable String name) {
-        fileService.deleteFile(name);
-        return Mono.just(ResponseEntity.ok("File " + name + " has been successfully deleted"));
+        return fileService.deleteFile(name).thenReturn(ResponseEntity.ok("successful removal"));
     }
 
 

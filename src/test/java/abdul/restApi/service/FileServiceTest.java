@@ -25,8 +25,11 @@ import static org.mockito.Mockito.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.VoidAnswer1;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -60,7 +63,7 @@ public class FileServiceTest {
     private String bucketName;
 
     private File getFile() {
-        return new File(1, "http://example.com/getLocation/name", "testFile.txt", Status.ACTIVE);
+        return new File(1, " https://<bucketName>.s3.amazonaws.com/testFile.txt", "testFile.txt", Status.ACTIVE);
     }
 
     @Test
@@ -82,38 +85,39 @@ public class FileServiceTest {
         s3Object.setObjectContent(inputStream);
 
         when(s3client.getObject(eq(bucketName), eq("testFile.txt"))).thenReturn(s3Object);
-        Mono<InputStream> result = fileService.download(getFile());
-        try {
-            assertArrayEquals(IOUtils.toByteArray(Objects.requireNonNull(result.block())), content);
-        } catch (IOException e) {
-            e.getMessage();
-        }
-
+        StepVerifier.create(fileService.download(getFile().getFileName()))
+                .expectNextMatches(input -> {
+                    try {
+                        byte[] resultContent = input.readAllBytes();
+                         assertArrayEquals(content, resultContent);
+                         return true;
+                    } catch (Exception e) {
+                        e.getCause();
+                        return false;
+                    }
+                })
+                .verifyComplete();
     }
 
     @Test
     public void testUploadFile() {
+        String fileName = "testFile.txt";
         User user = new User();
         user.setId(1);
         user.setUsername("Test User");
+        FilePart filePart = Mockito.mock(FilePart.class);
 
         File file = new File();
-        file.setFileName("testFile.txt");
-        file.setLocation("/name/path");
-        URL newUrl = null;
-        try {
-            newUrl = new URL("http://example.com/getLocation/name");
+        file.setFileName(fileName);
+        file.setLocation(" https://<bucketName>.s3.amazonaws.com/testFile.txt");
 
-        } catch (MalformedURLException e) {
-            e.getMessage();
-        }
-
-        when(s3client.getUrl(bucketName, file.getFileName())).thenReturn(newUrl);
+        when(filePart.filename()).thenReturn(fileName);
+        when(filePart.transferTo(any(java.io.File.class))).thenReturn(Mono.empty());
         when(userRepository.findById(1)).thenReturn(Mono.just(user));
         when(fileRepository.save(any(File.class))).thenReturn(Mono.just(getFile()));
         when(eventRepository.save(any(Event.class))).thenReturn(Mono.just(new Event()));
-
-        Mono<File> result = fileService.upload(file, 1);
+        when(s3client.putObject(eq(bucketName), eq("testFile.txt"), any(java.io.File.class))).thenReturn(new PutObjectResult());
+        Mono<File> result = fileService.upload(filePart, 1);
         StepVerifier.create(result).expectNext(getFile()).verifyComplete();
 
     }
@@ -134,11 +138,12 @@ public class FileServiceTest {
     }
 
     @Test
-    public void deleteFIleTest() {
+    public void deleteFileTest() {
         String fileName = getFile().getFileName();
         when(fileRepository.deleteActiveByFileName(fileName)).thenReturn(Mono.empty());
         doNothing().when(s3client).deleteObject(bucketName, fileName);
-        fileService.deleteFile(fileName);
-        verify(fileRepository).deleteActiveByFileName(fileName);
+
+        StepVerifier.create(fileService.deleteFile(fileName))
+                .verifyComplete();
     }
 }
