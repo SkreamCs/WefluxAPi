@@ -2,8 +2,6 @@ package abdul.restApi.spring.webflux.service;
 
 import abdul.restApi.spring.webflux.dto.EventDto;
 import abdul.restApi.spring.webflux.mapper.EventMapper;
-import abdul.restApi.spring.webflux.mapper.FileMapper;
-import abdul.restApi.spring.webflux.mapper.UserMapper;
 import abdul.restApi.spring.webflux.model.Event;
 import abdul.restApi.spring.webflux.model.Status;
 import abdul.restApi.spring.webflux.repository.EventRepository;
@@ -16,8 +14,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class EventService {
     private final EventRepository eventRepository;
-    private final FileMapper fileMapper;
-    private final UserMapper userMapper;
     private final EventMapper eventMapper;
 
     public Mono<Event> getByIdEvent(int id) {
@@ -26,10 +22,6 @@ public class EventService {
 
     public Flux<Event> getAllEvents() {
         return eventRepository.findAll();
-    }
-
-    public Mono<Event> createEvent(Event event) {
-        return eventRepository.save(event);
     }
 
     public Mono<Event> updateEvent(Event event) {
@@ -42,10 +34,6 @@ public class EventService {
     }
 
     public Flux<EventDto> getEventsByUserId(int userId) {
-        return eventRepository.findAllActiveByUserId(userId).map(event -> {
-            userMapper.map(event.getUser());
-            fileMapper.map(event.getFile());
-            return eventMapper.map(event);
-        });
+        return eventRepository.findAllActiveByUserId(userId).map(eventMapper::map);
     }
 }

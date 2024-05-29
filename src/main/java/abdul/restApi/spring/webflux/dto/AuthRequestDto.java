@@ -2,6 +2,7 @@ package abdul.restApi.spring.webflux.dto;
 
 import lombok.Builder;
 import lombok.ToString;
+
 @Builder(toBuilder = true)
 public record AuthRequestDto(
         String username,

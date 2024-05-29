@@ -31,9 +31,6 @@ public class UserService {
     public Mono<User> create(User user) {
         return userRepository.save(user.toBuilder()
                 .password(passwordEncoder.encode(user.getPassword()))
-                .email(user.getEmail())
-                .role(user.getRole())
-                .username(user.getUsername())
                 .build());
     }
 

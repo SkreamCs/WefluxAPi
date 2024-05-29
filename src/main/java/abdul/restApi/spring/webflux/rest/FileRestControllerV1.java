@@ -15,7 +15,7 @@ import java.io.InputStream;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/files")
+@RequestMapping("/api/v1/files")
 public class FileRestControllerV1 {
 
     private final FileService fileService;
@@ -23,6 +23,7 @@ public class FileRestControllerV1 {
 
     @PostMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
     public Mono<FileDto> uploadFile(@RequestPart("file") Mono<FilePart> filePart, @PathVariable int id) {
         return filePart.flatMap(file -> fileService.upload(file, id).map(fileMapper::map));
     }
@@ -33,7 +34,7 @@ public class FileRestControllerV1 {
         return fileService.download(name);
     }
 
-    @GetMapping
+    @GetMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public Mono<String> listFile() {
         return fileService.listFiles();

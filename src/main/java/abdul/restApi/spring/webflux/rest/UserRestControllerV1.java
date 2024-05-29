@@ -18,14 +18,14 @@ public class UserRestControllerV1 {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
     public Mono<UserDto> getUserById(@PathVariable int id) {
         return userService.getUserById(id).map(userMapper::map);
 
     }
 
-    @GetMapping
+    @GetMapping()
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public Flux<UserDto> getAll() {
         return userService.getAllUser().map(userMapper::map);
@@ -44,10 +44,10 @@ public class UserRestControllerV1 {
         return userService.update(userMapper.map(userDto)).map(userMapper::map);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public Mono<ResponseEntity<?>> delete(@PathVariable int id) {
-       return userService.deleteUser(id).thenReturn(ResponseEntity.ok("successful removal"));
+        return userService.deleteUser(id).thenReturn(ResponseEntity.ok("successful removal"));
 
     }
 }

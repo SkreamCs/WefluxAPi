@@ -1,10 +1,9 @@
-package abdul.restApi.service;
+package abdul.restApi.spring.webflux.service;
 
 import abdul.restApi.spring.webflux.model.Role;
 import abdul.restApi.spring.webflux.model.Status;
 import abdul.restApi.spring.webflux.model.User;
 import abdul.restApi.spring.webflux.repository.UserRepository;
-import abdul.restApi.spring.webflux.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +16,6 @@ import reactor.test.StepVerifier;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;

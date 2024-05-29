@@ -1,45 +1,38 @@
-package abdul.restApi.service;
+package abdul.restApi.spring.webflux.service;
 
 
 import abdul.restApi.spring.webflux.model.Event;
 import abdul.restApi.spring.webflux.model.File;
 import abdul.restApi.spring.webflux.model.Status;
 import abdul.restApi.spring.webflux.model.User;
-
 import abdul.restApi.spring.webflux.repository.EventRepository;
 import abdul.restApi.spring.webflux.repository.FileRepository;
 import abdul.restApi.spring.webflux.repository.UserRepository;
-import abdul.restApi.spring.webflux.service.FileService;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
-import com.amazonaws.util.IOUtils;
-
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.VoidAnswer1;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class FileServiceTest {
@@ -89,8 +82,8 @@ public class FileServiceTest {
                 .expectNextMatches(input -> {
                     try {
                         byte[] resultContent = input.readAllBytes();
-                         assertArrayEquals(content, resultContent);
-                         return true;
+                        assertArrayEquals(content, resultContent);
+                        return true;
                     } catch (Exception e) {
                         e.getCause();
                         return false;
@@ -107,9 +100,6 @@ public class FileServiceTest {
         user.setUsername("Test User");
         FilePart filePart = Mockito.mock(FilePart.class);
 
-        File file = new File();
-        file.setFileName(fileName);
-        file.setLocation(" https://<bucketName>.s3.amazonaws.com/testFile.txt");
 
         when(filePart.filename()).thenReturn(fileName);
         when(filePart.transferTo(any(java.io.File.class))).thenReturn(Mono.empty());

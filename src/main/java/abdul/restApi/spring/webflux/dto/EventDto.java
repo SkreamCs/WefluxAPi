@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EventDto {
     private int id;
-    private UserDto user;
-    private FileDto file;
+    private int userId;
+    private int fileId;
 }

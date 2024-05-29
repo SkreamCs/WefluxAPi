@@ -6,7 +6,6 @@ import abdul.restApi.spring.webflux.repository.EventRepository;
 import abdul.restApi.spring.webflux.repository.FileRepository;
 import abdul.restApi.spring.webflux.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
-
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,16 +50,16 @@ public class FileService {
         saveFile.setLocation(urlFile + file.filename());
         saveFile.setFileName(file.filename());
         return userRepository.findById(userId).flatMap(user -> file.transferTo(fileCloud).then(Mono.fromRunnable(() -> s3client.putObject(bucketName, file.filename(), fileCloud))).then(Mono.fromRunnable(() -> {
-                  if(!fileCloud.delete()) {
-                      log.error("Failed to delete file {}", file.filename());
-                  }
-               }))
-               .then(fileRepository.save(saveFile).flatMap(newFile -> {
-                   Event event = new Event();
-                   event.setFile(newFile);
-                   event.setUser(user);
-                   return eventRepository.save(event).thenReturn(newFile);
-               })));
+                    if (!fileCloud.delete()) {
+                        log.error("Failed to delete file {}", file.filename());
+                    }
+                }))
+                .then(fileRepository.save(saveFile).flatMap(newFile -> {
+                    Event event = new Event();
+                    event.setFile(newFile);
+                    event.setUser(user);
+                    return eventRepository.save(event).thenReturn(newFile);
+                })));
     }
 
 
@@ -74,7 +73,7 @@ public class FileService {
     }
 
     public Mono<Void> deleteFile(String fileName) {
-         return fileRepository.deleteActiveByFileName(fileName).then(Mono.fromRunnable(() -> s3client.deleteObject(bucketName, fileName)));
+        return fileRepository.deleteActiveByFileName(fileName).then(Mono.fromRunnable(() -> s3client.deleteObject(bucketName, fileName)));
     }
 }
 
